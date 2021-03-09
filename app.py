@@ -132,7 +132,7 @@ def temp_range_start_end(start,end):
                                 func.min(measurements.tobs), \
                                 func.avg(measurements.tobs), \
                                 func.max(measurements.tobs)).\
-                        filter((measurements.date >= start_dt) , (measurements.date <= end_dt)).\
+                        filter((measurements.date >= start_dt) & (measurements.date <= end_dt)).\
                         group_by(measurements.date).all()
     for date, min, avg, max in results:
         new_dict = {}
