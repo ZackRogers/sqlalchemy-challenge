@@ -52,7 +52,7 @@ def prcp():
 
     """Return a list of all measurements names"""
     # Query all measurementss
-    return { date: prcp for date, prcp in session.query(measurements.date, measurements.prcp).all() }
+    return { date: prcp for date, prcp in session.query(measurements.date, measurements.prcp).filter(measurements.date >= '2016-08-23').all() }
     # results = session.query(measurements.date, measurements.prcp).all()
     # respond = {}
     # for date, prcp in results:
@@ -71,7 +71,7 @@ def get_tobs():
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    return { date: tobs for date, tobs in session.query(measurements.date, measurements.tobs).all() }
+    return { date: tobs for date, tobs in session.query(measurements.date, measurements.tobs).filter(measurements.date >= '2016-08-23').filter(measurements.station== "USC00519281").all() }
 
 
 #@app.route('/api/v1.0/<start>')
@@ -81,39 +81,9 @@ def get_tobs():
    # if(end = False)
 # create start route
 
-
-# create start route
 @app.route("/api/v1.0/<start>")
-def temp_range_start(start):
-    """TMIN, TAVG, and TMAX per date starting from a starting date.
-    Args:
-        start (string): A date string in the format %Y-%m-%d
-    Returns:
-        TMIN, TAVE, and TMAX
-    """
-    # Create session link from Python to the DB
-    session = Session(engine)
-    return_list = []
-    #String format as desired
-    format_str = '%Y-%m-%d'
-    start_dt = dt.datetime.strptime(start, format_str)
-    results =   session.query(  measurements.date,\
-                                func.min(measurements.tobs), \
-                                func.avg(measurements.tobs), \
-                                func.max(measurements.tobs)).\
-                        filter(measurements.date >= start_dt).\
-                        group_by(measurements.date).all()
-    for date, min, avg, max in results:
-        new_dict = {}
-        new_dict["Date"] = date
-        new_dict["TMIN"] = min
-        new_dict["TAVG"] = avg
-        new_dict["TMAX"] = max
-        return_list.append(new_dict)
-    session.close()    
-    return jsonify(return_list)
 @app.route("/api/v1.0/<start>/<end>")
-def temp_range_start_end(start,end):
+def temp_range_start_end(start,end = '2017-08-23'):
     """TMIN, TAVG, and TMAX per date for a date range.
     Args:
         start (string): A date string in the format %Y-%m-%d
@@ -123,26 +93,9 @@ def temp_range_start_end(start,end):
     """
     # Create session link from Python to the DB
     session = Session(engine)
-    return_list = []
-    #String format as desired
-    format_str = '%Y-%m-%d'
-    start_dt = dt.datetime.strptime(start, format_str)
-    end_dt = dt.datetime.strptime(end, format_str)
-    results =   session.query(measurements.date,\
-                                func.min(measurements.tobs), \
-                                func.avg(measurements.tobs), \
-                                func.max(measurements.tobs)).\
-                        filter((measurements.date >= start_dt) & (measurements.date <= end_dt)).\
-                        group_by(measurements.date).all()
-    for date, min, avg, max in results:
-        new_dict = {}
-        new_dict["Date"] = date
-        new_dict["TMIN"] = min
-        new_dict["TAVG"] = avg
-        new_dict["TMAX"] = max
-        return_list.append(new_dict)
-    session.close()    
-    return jsonify(return_list)
+ 
+    results = session.query(func.min(measurements.tobs), func.max(measurements.tobs),func.avg(measurements.tobs)).filter((measurements.date>=start)&(measurements.date<=end)).all()
+    return jsonify(results)
 
 if __name__ == '__main__':
     app.run(debug=True)
