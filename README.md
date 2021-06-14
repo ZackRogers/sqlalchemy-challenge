@@ -2,6 +2,8 @@
 
 ### Before You Begin
 
+For this assignment I was tasked to create an analysis on weather data using SQL Alchemy and then visualize the data.
+
 1. Create a new repository for this project called `sqlalchemy-challenge`. **Do not add this homework to an existing repository**.
 
 2. Clone the new repository to your computer.
